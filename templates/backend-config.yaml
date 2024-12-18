@@ -2,7 +2,6 @@ apiVersion: cloud.google.com/v1
 kind: BackendConfig
 metadata:
   name: django-backend-config
-  namespace: {{ .Release.Namespace }}
 spec:
   healthCheck:
     checkIntervalSec: 15
@@ -10,5 +9,4 @@ spec:
     healthyThreshold: 1
     unhealthyThreshold: 5
     type: HTTP
-    requestPath: {{ .Values.django.healthCheck.path }}
-    port: {{ .Values.django.healthCheck.port }}
+    requestPath: /health/  # Set the desired health check endpoint here
