@@ -1,21 +1,15 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ .Values.django.appName }}
-  namespace: {{ .Release.Namespace }}
+  name: better-backend-app-django
   labels:
-    app: {{ .Values.django.appName }}
-    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
-    release: {{ .Release.Name }}
+    app: better-backend-app-django
   annotations:
     cloud.google.com/backend-config: '{"default": "django-backend-config"}'
-    beta.cloud.google.com/backend-config: '{"ports": {"80": "django-backend-config"}}'
 spec:
-  type: {{ .Values.django.service.type }}
+  type: ClusterIP      
   selector:
-    app: {{ .Values.django.appName }}
+    app: better-backend-app-django
   ports:
-    - port: {{ .Values.django.service.port }}
-      targetPort: {{ .Values.django.service.targetPort }}
-      protocol: TCP
-      name: http
+    - port: 80
+      targetPort: 8000
