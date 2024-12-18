@@ -11,13 +11,13 @@ env:
   REGION: asia-south1
   DEPLOYMENT_NAME: better-backend-app-django
   IMAGE_NAME: 17-12-2024_11-48-31
-  IMAGE_TAG: latest
   ARTIFACT_REPO: bo-main
   ARTIFACT_REGION: asia-south1
   HELM_RELEASE_NAME: my-helm-release
-  HELM_CHART_PATH: ./helm-chart  # Path to Helm chart directory
+  HELM_CHART_PATH: ./helm-chart
   CONFIG_MAP_NAME: better-backend-app-config
   TEMPLATE_PATH: ./templates
+  NAMESPACE: stage
 
 jobs:
   build-and-deploy:
@@ -25,34 +25,28 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Checkout repository
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # Step 2: Authenticate with Google Cloud
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v1
         with:
           credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
 
-      # Step 3: Set up gcloud CLI
       - name: Set up gcloud CLI
         uses: google-github-actions/setup-gcloud@v1
         with:
           service_account_key: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
           project_id: ${{ env.PROJECT_ID }}
 
-      # Step 4: Install gke-gcloud-auth-plugin
       - name: Install gke-gcloud-auth-plugin
         run: |
           gcloud components install gke-gcloud-auth-plugin
 
-      # Step 5: Configure Docker to Use Artifact Registry
       - name: Configure Docker for Artifact Registry
         run: |
           gcloud auth configure-docker ${ARTIFACT_REGION}-docker.pkg.dev
 
-      # Step 6: Build Docker Image
       - name: Build Docker Image
         run: |
           IMAGE_TAG=${{ github.sha }}
@@ -60,58 +54,43 @@ jobs:
           docker tag ${ARTIFACT_REGION}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.ARTIFACT_REPO }}/${{ env.IMAGE_NAME }}:${IMAGE_TAG} \
                    ${ARTIFACT_REGION}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.ARTIFACT_REPO }}/${{ env.IMAGE_NAME }}:latest
 
-      # Step 7: Push Docker Image to Artifact Registry
       - name: Push Docker Image to Artifact Registry
         run: |
           IMAGE_TAG=${{ github.sha }}
           docker push ${ARTIFACT_REGION}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.ARTIFACT_REPO }}/${{ env.IMAGE_NAME }}:${IMAGE_TAG}
           docker push ${ARTIFACT_REGION}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.ARTIFACT_REPO }}/${{ env.IMAGE_NAME }}:latest
 
-      # Step 8: Set up GKE context
       - name: Set up GKE context
         run: |
           gcloud container clusters get-credentials ${{ env.CLUSTER_NAME }} \
             --region ${{ env.REGION }} \
             --project ${{ env.PROJECT_ID }}
 
-      # Step 9: Install Helm
       - name: Install Helm
         run: |
           curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
           helm create ./helm-chart
           rm -rf helm-chart/templates/*
 
-      # Step 10: Copy YAML files to Helm Chart Templates Directory
       - name: Copy YAML files to Helm chart templates
         run: |
           cp ${TEMPLATE_PATH}/*.yaml ./helm-chart/templates/
 
-      # Step 11: Deploy to GKE using Helm
       - name: Deploy using Helm
         run: |
-          helm upgrade --install my-helm-release ./helm-chart \
-              --set django.image.repository=$ARTIFACT_REGION-docker.pkg.dev/bo-stage/bo-main/17-12-2024_11-48-31 \
-              --set django.image.tag=99c2c3261d71ce3b0d3baea70c1f0048bbffdb6b \
-              --set django.appName=better-backend-app-django \
-              --set configMap.name=better-backend-app-config \
-              --set django.resources.requests.memory="256Mi" \
-              --set django.resources.requests.cpu="250m" \
-              --namespace stage \
-              --create-namespace
+          helm upgrade --install ${{ env.HELM_RELEASE_NAME }} ./helm-chart \
+              --set django.image.repository=${ARTIFACT_REGION}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.ARTIFACT_REPO }}/${{ env.IMAGE_NAME }} \
+              --set django.image.tag=${{ github.sha }} \
+              --set django.appName=${{ env.DEPLOYMENT_NAME }} \
+              --set configMap.name=${{ env.CONFIG_MAP_NAME }} \
+              --namespace ${{ env.NAMESPACE }} \
+              --create-namespace \
+              --wait --timeout 10m
 
-      # Step 12: Apply Template Configurations
-      - name: Apply Kubernetes Config Template (if needed)
-        run: |
-          kubectl apply -f ${TEMPLATE_PATH}/django-deployment.yaml
-          kubectl apply -f ${TEMPLATE_PATH}/service.yaml
-
-      # Step 13: Verify Deployment
       - name: Verify Deployment
         run: |
-          kubectl get deployments --namespace stage
-      # kubectl apply -f backend-config.yaml
+          kubectl get deployments -n ${{ env.NAMESPACE }}
 
-      # Optional: Notify on Deployment Success
       - name: Notify Deployment Success
         if: success()
         run: |
