@@ -94,6 +94,8 @@ jobs:
               --set django.image.tag=99c2c3261d71ce3b0d3baea70c1f0048bbffdb6b \
               --set django.appName=better-backend-app-django \
               --set configMap.name=better-backend-app-config \
+              --set django.resources.requests.memory="256Mi" \
+              --set django.resources.requests.cpu="250m" \
               --namespace stage \
               --create-namespace
 
