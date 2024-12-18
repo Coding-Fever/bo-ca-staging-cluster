@@ -1,53 +1,47 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Values.django.appName }}
-  namespace: {{ .Release.Namespace }}
+  name: better-backend-app-django
   labels:
-    app: {{ .Values.django.appName }}
-    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
-    release: {{ .Release.Name }}
+    app: better-backend-app-django
 spec:
-  replicas: {{ .Values.django.replicas }}
+  replicas: 1
   selector:
     matchLabels:
-      app: {{ .Values.django.appName }}
+      app: better-backend-app-django  # Change 'pod' to 'app' for consistency
   template:
     metadata:
       labels:
-        app: {{ .Values.django.appName }}
+        app: better-backend-app-django # Change 'pod' to 'app' for consistency
     spec:
       containers:
-        - name: {{ .Values.django.appName }}
-          image: "{{ .Values.django.image.repository }}:{{ .Values.django.image.tag }}"
-          imagePullPolicy: {{ .Values.django.image.pullPolicy }}
+        - name: better-backend-app-django
+          image: asia-south1-docker.pkg.dev/bo-stage/bo-main:latest
           ports:
-            - name: http
-              containerPort: 8000
-              protocol: TCP
+            - containerPort: 8000
           envFrom:
             - configMapRef:
-                name: {{ .Values.configMap.name }}
+                name: better-backend-app-config
           resources:
             requests:
-              memory: {{ .Values.django.resources.requests.memory }}
-              cpu: {{ .Values.django.resources.requests.cpu }}
+              memory: 4Gi
+              cpu: 2
             limits:
-              memory: {{ .Values.django.resources.limits.memory }}
-              cpu: {{ .Values.django.resources.limits.cpu }}
+              memory: 6Gi
+              cpu: 3
           livenessProbe:
             httpGet:
-              path: {{ .Values.django.healthCheck.path }}
-              port: {{ .Values.django.healthCheck.port }}
-            initialDelaySeconds: {{ .Values.django.livenessProbe.initialDelaySeconds }}
-            periodSeconds: {{ .Values.django.livenessProbe.periodSeconds }}
-            failureThreshold: {{ .Values.django.livenessProbe.failureThreshold }}
-            successThreshold: {{ .Values.django.livenessProbe.successThreshold }}
+                path: /health/
+                port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 15
+            failureThreshold: 5
+            successThreshold: 1
           readinessProbe:
             httpGet:
-              path: {{ .Values.django.healthCheck.path }}
-              port: {{ .Values.django.healthCheck.port }}
-            initialDelaySeconds: {{ .Values.django.readinessProbe.initialDelaySeconds }}
-            periodSeconds: {{ .Values.django.readinessProbe.periodSeconds }}
-            failureThreshold: {{ .Values.django.readinessProbe.failureThreshold }}
-            successThreshold: {{ .Values.django.readinessProbe.successThreshold }}
+                path: /health/
+                port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 15
+            failureThreshold: 5
+            successThreshold: 1
