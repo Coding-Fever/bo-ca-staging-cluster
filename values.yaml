@@ -18,3 +18,4 @@ django:
     requests:
       cpu: 2
       memory: 4Gi
+      
