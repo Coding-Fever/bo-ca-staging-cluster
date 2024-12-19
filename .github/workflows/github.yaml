@@ -10,7 +10,7 @@ env:
   CLUSTER_NAME: be-demo
   REGION: asia-south1
   DEPLOYMENT_NAME: django-deployment
-  IMAGE_NAME: asia-south1-docker.pkg.dev/bo-stage/bo-main/17-12-2024_11-48-31
+  IMAGE_NAME: asia-south1-docker.pkg.dev/bo-stage/bo-main/17-12-2024_11-48-31 
   ARTIFACT_REPO: bo-main
   ARTIFACT_REGION: asia-south1
 
