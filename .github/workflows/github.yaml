@@ -62,7 +62,6 @@ jobs:
       - name: Verify Deployment
         run: |
           kubectl get all --all-namespaces
-
       # Optional: Notify on Deployment Success
       - name: Notify Deployment Success
         if: success()
