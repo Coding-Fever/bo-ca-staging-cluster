@@ -1,47 +1,28 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: better-backend-app-django
-  labels:
-    app: better-backend-app-django
+  name: "django-deployment"
+  namespace: "stage"
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: better-backend-app-django  # Change 'pod' to 'app' for consistency
+      app: "django-deployment"
   template:
     metadata:
       labels:
-        app: better-backend-app-django # Change 'pod' to 'app' for consistency
+        app: "django-deployment"
     spec:
       containers:
-        - name: better-backend-app-django
-          image: asia-south1-docker.pkg.dev/bo-stage/bo-main:latest
+        - name: "django-deployment"
+          image: "asia-south1-docker.pkg.dev/bo-stage/bo-main/17-12-2024_11-48-31@sha256:e462b7366629ecdfbb739203980796d3dd5f61e6bd8cc522a01719790c47e84e"
+          imagePullPolicy: Always
           ports:
             - containerPort: 8000
-          envFrom:
-            - configMapRef:
-                name: better-backend-app-config
           resources:
             requests:
-              memory: 4Gi
-              cpu: 2
+              memory: "128Mi"
+              cpu: "250m"
             limits:
-              memory: 6Gi
-              cpu: 3
-          livenessProbe:
-            httpGet:
-                path: /health/
-                port: 8000
-            initialDelaySeconds: 10
-            periodSeconds: 15
-            failureThreshold: 5
-            successThreshold: 1
-          readinessProbe:
-            httpGet:
-                path: /health/
-                port: 8000
-            initialDelaySeconds: 10
-            periodSeconds: 15
-            failureThreshold: 5
-            successThreshold: 1
+              memory: "512Mi"
+              cpu: "500m"
