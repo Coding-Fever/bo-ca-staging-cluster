@@ -2,6 +2,7 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: better-backend-app-django
+  namespace: stage
   annotations:
     kubernetes.io/ingress.class: "gce"  # Use "gce" for GKE Ingress
 # kubernetes.io/ingress.global-static-ip-name: "gke-ingress-static-ip"  # Optional: For a static IP, create one in GCP and replace here
