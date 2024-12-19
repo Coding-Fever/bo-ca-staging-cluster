@@ -22,6 +22,6 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: better-backend-app-django
+            name: django-svc
             port:
-              number: 80
+              number: 8000
