@@ -72,6 +72,7 @@ jobs:
           kubectl apply -f templates/django-deployment.yaml
           kubectl apply -f templates/service.yaml
           kubectl apply -f templates/backend-config.yaml
+          kubectl apply -f templates/django-ingress.yaml
           kubectl rollout restart deployment/django-deployment -n stage
 
       # Step 10: Verify Deployment
